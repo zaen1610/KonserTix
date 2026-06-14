@@ -62,8 +62,8 @@
                             type="text"
                             name="nama_pembeli"
                             class="form-control"
-                            value="{{ auth()->user()->name }}"
-                            placeholder="Masukkan nama pembeli">
+                            value=""
+                            placeholder="Nama pembeli">
                     </div>
 
                     <div class="mb-3">
