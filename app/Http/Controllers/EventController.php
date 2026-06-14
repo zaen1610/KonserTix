@@ -40,6 +40,19 @@ class EventController extends Controller
 
     public function store(Request $request)
     {
+        // Jika data master belum ada, arahkan untuk mengisi terlebih dahulu
+        if (KategoriEvent::count() === 0) {
+            return redirect()
+                ->route('kategori.create')
+                ->with('error', 'Kategori belum tersedia. Silakan buat kategori terlebih dahulu.');
+        }
+
+        if (Lokasi::count() === 0) {
+            return redirect()
+                ->route('lokasi.create')
+                ->with('error', 'Lokasi belum tersedia. Silakan buat lokasi terlebih dahulu.');
+        }
+
         $request->validate([
 
             'nama_event' => 'required',
@@ -59,18 +72,17 @@ class EventController extends Controller
         $gambar = null;
 
         if ($request->hasFile('gambar')) {
-
             $gambar = $request
                 ->file('gambar')
                 ->store('events', 'public');
-
         }
 
         Event::create([
 
             'nama_event' => $request->nama_event,
 
-            'kategori_event_id' => $request->kategori_event_id,
+            // DB column: kategori_id
+            'kategori_id' => $request->kategori_event_id,
 
             'lokasi_id' => $request->lokasi_id,
 
@@ -105,15 +117,22 @@ class EventController extends Controller
     */
 
     public function showUser($id)
-{
-    $event = Event::with([
-        'kategori',
-        'lokasi',
-        'tiket'
-    ])->findOrFail($id);
+    {
+        $event = Event::with([
+            'kategori',
+            'lokasi',
+            'tiket'
+        ])->findOrFail($id);
 
-    return view('user.show', compact('event'));
-}
+        // user/Event.blade.php memakai $events dengan relasi: kategori,lokasi,tiket
+        $events = Event::with(['kategori','lokasi','tiket'])
+            ->whereKey($event->id)
+            ->get();
+
+        return view('user.Event', compact('events'));
+
+    }
+
 
     public function edit($id)
     {
@@ -135,6 +154,19 @@ class EventController extends Controller
 
     public function update(Request $request, $id)
     {
+        // Jika data master belum ada, arahkan untuk mengisi terlebih dahulu
+        if (KategoriEvent::count() === 0) {
+            return redirect()
+                ->route('kategori.create')
+                ->with('error', 'Kategori belum tersedia. Silakan buat kategori terlebih dahulu.');
+        }
+
+        if (Lokasi::count() === 0) {
+            return redirect()
+                ->route('lokasi.create')
+                ->with('error', 'Lokasi belum tersedia. Silakan buat lokasi terlebih dahulu.');
+        }
+
         $event = Event::findOrFail($id);
 
         $request->validate([
@@ -158,22 +190,20 @@ class EventController extends Controller
         if ($request->hasFile('gambar')) {
 
             if ($gambar) {
-
                 Storage::disk('public')->delete($gambar);
-
             }
 
             $gambar = $request
                 ->file('gambar')
                 ->store('events', 'public');
-
         }
 
         $event->update([
 
             'nama_event' => $request->nama_event,
 
-            'kategori_event_id' => $request->kategori_event_id,
+            // DB column: kategori_id
+            'kategori_id' => $request->kategori_event_id,
 
             'lokasi_id' => $request->lokasi_id,
 
@@ -195,9 +225,7 @@ class EventController extends Controller
         $event = Event::findOrFail($id);
 
         if ($event->gambar) {
-
             Storage::disk('public')->delete($event->gambar);
-
         }
 
         $event->delete();
@@ -206,6 +234,4 @@ class EventController extends Controller
             ->route('events.index')
             ->with('success', 'Event berhasil dihapus.');
     }
-
-
 }

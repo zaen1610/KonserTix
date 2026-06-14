@@ -70,7 +70,8 @@
                             <option
                                 value="{{ $k->id }}">
 
-                                {{ $k->nama }}
+                                {{ $k->nama_kategori }}
+
 
                             </option>
 
@@ -96,7 +97,8 @@
                             <option
                                 value="{{ $l->id }}">
 
-                                {{ $l->nama }}
+                                {{ $l->nama_lokasi }}
+
 
                             </option>
 

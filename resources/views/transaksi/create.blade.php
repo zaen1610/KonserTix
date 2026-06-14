@@ -96,11 +96,12 @@
 
                 <div class="mb-3">
 
-                    <label>Status</label>
+                    <label>Metode Pembayaran</label>
 
                     <select
-                        name="status"
+                        name="metode_pembayaran"
                         class="form-control">
+
 
                         <option value="Pending">
 

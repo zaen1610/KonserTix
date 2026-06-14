@@ -12,13 +12,16 @@ class Transaksi extends Model
         'nama_pembeli',
         'jumlah',
         'total_harga',
-        'status'
+        'status',
+        'metode_pembayaran',
     ];
 
     public function tiket()
     {
-        return $this->belongsTo(Tiket::class);
+        // FK transaksis -> tikets dengan kolom tiket_id
+        return $this->belongsTo(Tiket::class, 'tiket_id');
     }
+
 
     public function user()
     {

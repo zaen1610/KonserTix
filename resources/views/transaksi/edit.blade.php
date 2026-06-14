@@ -108,11 +108,49 @@
 
                 <div class="mb-3">
 
+                    <label>Metode Pembayaran</label>
+
+                    <select
+                        name="metode_pembayaran"
+                        class="form-control">
+
+
+                        <option
+                            value="Pending"
+                            {{ $transaksi->metode_pembayaran=="Pending" ? 'selected':'' }}>
+
+                            Pending
+
+                        </option>
+
+                        <option
+                            value="Confirmed"
+                            {{ $transaksi->metode_pembayaran=="Confirmed" ? 'selected':'' }}>
+
+                            Confirmed
+
+                        </option>
+
+                        <option
+                            value="Rejected"
+                            {{ $transaksi->metode_pembayaran=="Rejected" ? 'selected':'' }}>
+
+                            Rejected
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="mb-3">
+
                     <label>Status</label>
 
                     <select
                         name="status"
                         class="form-control">
+
 
                         <option
                             value="Pending"

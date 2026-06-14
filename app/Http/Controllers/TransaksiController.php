@@ -19,7 +19,7 @@ class TransaksiController extends Controller
     {
         $transaksis = Transaksi::with([
             'user',
-            'tiket.event'
+            'tiket.event',
         ])->latest()->paginate(10);
 
         return view('transaksi.index', compact('transaksis'));
@@ -47,48 +47,32 @@ class TransaksiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-
             'tiket_id' => 'required|exists:tikets,id',
-
             'nama_pembeli' => 'required',
-
             'jumlah' => 'required|integer|min:1',
-
-            'status' => 'required'
-
+            'metode_pembayaran' => 'required|string|max:50',
+            'status' => 'required',
         ]);
 
         DB::beginTransaction();
 
         try {
-
             $tiket = Tiket::findOrFail($request->tiket_id);
 
             if ($tiket->stok < $request->jumlah) {
-
-                return back()->with(
-                    'error',
-                    'Stok tiket tidak mencukupi.'
-                );
-
+                return back()->with('error', 'Stok tiket tidak mencukupi.');
             }
 
             $total = $tiket->harga * $request->jumlah;
 
             Transaksi::create([
-
                 'user_id' => auth()->id(),
-
                 'tiket_id' => $tiket->id,
-
                 'nama_pembeli' => $request->nama_pembeli,
-
                 'jumlah' => $request->jumlah,
-
                 'total_harga' => $total,
-
-                'status' => $request->status
-
+                'metode_pembayaran' => $request->metode_pembayaran,
+                'status' => $request->status,
             ]);
 
             $tiket->decrement('stok', $request->jumlah);
@@ -98,16 +82,10 @@ class TransaksiController extends Controller
             return redirect()
                 ->route('transaksi.index')
                 ->with('success', 'Transaksi berhasil.');
-
-        } catch (\Exception $e) {
-
+        } catch (\Throwable $e) {
             DB::rollBack();
 
-            return back()->with(
-                'error',
-                $e->getMessage()
-            );
-
+            return back()->with('error', $e->getMessage());
         }
     }
 
@@ -121,7 +99,7 @@ class TransaksiController extends Controller
     {
         $transaksi = Transaksi::with([
             'user',
-            'tiket.event'
+            'tiket.event',
         ])->findOrFail($id);
 
         return view('transaksi.show', compact('transaksi'));
@@ -136,16 +114,9 @@ class TransaksiController extends Controller
     public function edit($id)
     {
         $transaksi = Transaksi::findOrFail($id);
-
         $tikets = Tiket::all();
 
-        return view(
-            'transaksi.edit',
-            compact(
-                'transaksi',
-                'tikets'
-            )
-        );
+        return view('transaksi.edit', compact('transaksi', 'tikets'));
     }
 
     /*
@@ -157,33 +128,23 @@ class TransaksiController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-
             'tiket_id' => 'required',
-
             'nama_pembeli' => 'required',
-
             'jumlah' => 'required|integer|min:1',
-
             'total_harga' => 'required|numeric',
-
-            'status' => 'required'
-
+            'metode_pembayaran' => 'required|string|max:50',
+            'status' => 'required',
         ]);
 
         $transaksi = Transaksi::findOrFail($id);
 
         $transaksi->update([
-
             'tiket_id' => $request->tiket_id,
-
             'nama_pembeli' => $request->nama_pembeli,
-
             'jumlah' => $request->jumlah,
-
             'total_harga' => $request->total_harga,
-
-            'status' => $request->status
-
+            'metode_pembayaran' => $request->metode_pembayaran,
+            'status' => $request->status,
         ]);
 
         return redirect()
@@ -200,7 +161,6 @@ class TransaksiController extends Controller
     public function destroy($id)
     {
         $transaksi = Transaksi::findOrFail($id);
-
         $transaksi->delete();
 
         return redirect()
@@ -217,23 +177,16 @@ class TransaksiController extends Controller
     public function konfirmasi(Request $request, $id)
     {
         $request->validate([
-
-            'status' => 'required|in:Pending,Confirmed,Rejected'
-
+            'status' => 'required|in:Pending,Confirmed,Rejected',
         ]);
 
         $transaksi = Transaksi::findOrFail($id);
 
         $transaksi->update([
-
-            'status' => $request->status
-
+            'status' => $request->status,
         ]);
 
-        return back()->with(
-            'success',
-            'Status transaksi berhasil diperbarui.'
-        );
+        return back()->with('success', 'Status transaksi berhasil diperbarui.');
     }
 
     /*
@@ -244,39 +197,43 @@ class TransaksiController extends Controller
 
     public function beli($id)
     {
+        $tiket = Tiket::with('event')->findOrFail($id);
+        return view('tiket.beli', compact('tiket'));
+    }
+
+    public function beliProcess($id, Request $request)
+    {
+        $tiket = Tiket::findOrFail($id);
+
+        $request->validate([
+            'nama_pembeli' => 'required',
+            'jumlah' => 'required|integer|min:1',
+            'metode_pembayaran' => 'required|string|max:50',
+        ]);
+
         DB::beginTransaction();
 
         try {
-
-            $tiket = Tiket::findOrFail($id);
-
             if ($tiket->stok <= 0) {
-
-                return back()->with(
-                    'error',
-                    'Maaf, stok tiket habis.'
-                );
-
+                return back()->with('error', 'Maaf, stok tiket habis.');
             }
 
-            $jumlah = 1;
+            $jumlah = (int) $request->jumlah;
+
+            if ($tiket->stok < $jumlah) {
+                return back()->with('error', 'Maaf, stok tiket habis.');
+            }
 
             $total = $jumlah * $tiket->harga;
 
             Transaksi::create([
-
                 'user_id' => auth()->id(),
-
                 'tiket_id' => $tiket->id,
-
-                'nama_pembeli' => auth()->user()->name,
-
+                'nama_pembeli' => $request->nama_pembeli,
                 'jumlah' => $jumlah,
-
                 'total_harga' => $total,
-
-                'status' => 'Pending'
-
+                'metode_pembayaran' => $request->metode_pembayaran,
+                'status' => 'Pending',
             ]);
 
             $tiket->decrement('stok', $jumlah);
@@ -285,20 +242,12 @@ class TransaksiController extends Controller
 
             return redirect()
                 ->route('user.riwayat')
-                ->with(
-                    'success',
-                    'Pembelian berhasil. Menunggu konfirmasi admin.'
-                );
-
-        } catch (\Exception $e) {
-
+                ->with('success', 'Pembelian berhasil. Menunggu konfirmasi admin.');
+        } catch (\Throwable $e) {
             DB::rollBack();
 
-            return back()->with(
-                'error',
-                $e->getMessage()
-            );
-
+            return back()->with('error', $e->getMessage());
         }
     }
 }
+

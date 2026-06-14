@@ -39,7 +39,7 @@
         <div class="col-sm-6">
             <div style="background:rgba(168,85,247,0.1);border-radius:12px;padding:14px">
                 <div class="text-muted small mb-1"><i class="bi bi-clock me-1"></i>Jam</div>
-                <div class="fw-bold">{{ $event->jam }} WIB</div>
+                <div class="fw-bold">{{ $event->jam ? $event->jam . ' WIB' : '-' }}</div>
             </div>
         </div>
         <div class="col-sm-12">
@@ -80,8 +80,12 @@
                 @if($tiket->stok > 0)
                     <form action="{{ route('tiket.beli', $tiket->id) }}" method="POST">
                         @csrf
+                        @php
+                            $jenis = $tiket->jenis ?? 'Tiket';
+                            $hargaFormatted = number_format($tiket->harga, 0, ',', '.');
+                        @endphp
                         <button type="submit" class="btn btn-neon w-100"
-                                onclick="return confirm('Beli 1 tiket {{ $tiket->jenis ?? '' }} seharga Rp {{ number_format($tiket->harga,0,\",\"\".\") }}?')">
+                                onclick="return confirm('Beli 1 tiket {{ addslashes($jenis) }} seharga Rp {{ $hargaFormatted }}?')">
                             <i class="bi bi-cart-plus me-1"></i> Beli Sekarang
                         </button>
                     </form>
@@ -98,3 +102,4 @@
 @endif
 
 @endsection
+

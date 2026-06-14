@@ -30,8 +30,10 @@ class Tiket extends Model
     */
     public function transaksis()
     {
-        return $this->hasMany(Transaksi::class);
+        // FK transaksis -> tikets dengan kolom tiket_id
+        return $this->hasMany(Transaksi::class, 'tiket_id');
     }
+
 
     /*
     |--------------------------------------------------------------------------

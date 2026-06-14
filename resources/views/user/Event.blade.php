@@ -147,20 +147,15 @@
 
                                 @if($event->tiket->stok>0)
 
-                                    <form
-                                        action="{{ route('tiket.beli',$event->tiket->id) }}"
-                                        method="POST">
+                                    <a
+                                        href="{{ route('tiket.beli', $event->tiket->id) }}"
+                                        class="btn btn-success w-100">
 
-                                        @csrf
+                                        🎫 Beli Tiket
 
-                                        <button
-                                            class="btn btn-success w-100">
+                                    </a>
 
-                                            🎫 Beli Tiket
 
-                                        </button>
-
-                                    </form>
 
                                 @else
 

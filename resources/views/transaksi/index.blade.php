@@ -79,13 +79,13 @@
 
                             <td>
 
-                                {{ $transaksis->firstItem()+$no }}
+                                {{ ($transaksis->firstItem()-1)+$no }}
 
                             </td>
 
                             <td>
 
-                                {{ $transaksi->nama_pembeli }}
+                                {{ !empty($transaksi->nama_pembeli) ? $transaksi->nama_pembeli : '-' }}
 
                             </td>
 

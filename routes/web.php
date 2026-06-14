@@ -97,9 +97,17 @@ Route::middleware(['auth','role:user'])->group(function(){
         [EventController::class,'showUser'])
         ->name('user.event.show');
 
-    Route::post('/beli-tiket/{id}',
+    // Halaman/konfirmasi pembelian tiket (GET)
+    Route::get('/beli-tiket/{id}',
         [TransaksiController::class,'beli'])
         ->name('tiket.beli');
+
+    // Proses pembelian tiket (POST)
+    Route::post('/beli-tiket/{id}/process',
+        [TransaksiController::class,'beliProcess'])
+        ->name('tiket.beli.process');
+
+
 
     Route::get('/riwayat-pembelian',
         [UserHomeController::class,'riwayat'])

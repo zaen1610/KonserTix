@@ -7,12 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Event extends Model
 {
     protected $fillable = [
-        'kategori_event_id',
+        // Sesuai skema tabel `events`
+        'kategori_id',
         'lokasi_id',
         'nama_event',
         'tanggal',
         'deskripsi',
-        'gambar'
+        'gambar',
     ];
 
     public function kategori()
@@ -29,6 +30,15 @@ class Event extends Model
 
     public function tikets()
     {
-       return $this->hasMany(Tiket::class, 'event_id');
+        return $this->hasMany(Tiket::class, 'event_id');
     }
+
+    // alias agar tidak error jika kode/blade/controller memanggil relasi `tiket`
+    // Blade `user/Event.blade.php` mengharapkan `tiket` adalah objek tunggal (bukan collection)
+    public function tiket()
+    {
+        return $this->hasOne(Tiket::class, 'event_id');
+    }
+
 }
+

@@ -38,6 +38,11 @@
 @forelse($kategoris as $kategori)
 
 @php
+    $kategori->loadMissing('events.tikets.transaksis');
+@endphp
+
+
+@php
 
 $totalEvent = $kategori->events->count();
 
@@ -163,6 +168,7 @@ Belum ada kategori.
 </div>
 
 @endforelse
+
 
 </div>
 

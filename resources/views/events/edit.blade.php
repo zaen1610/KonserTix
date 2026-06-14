@@ -70,7 +70,8 @@
                                 value="{{ $k->id }}"
                                 {{ $event->kategori_event_id==$k->id ? 'selected':'' }}>
 
-                                {{ $k->nama }}
+                                {{ $k->nama_kategori }}
+
 
                             </option>
 
@@ -95,7 +96,8 @@
                                 value="{{ $l->id }}"
                                 {{ $event->lokasi_id==$l->id ? 'selected':'' }}>
 
-                                {{ $l->nama }}
+                                {{ $l->nama_lokasi }}
+
 
                             </option>
 
