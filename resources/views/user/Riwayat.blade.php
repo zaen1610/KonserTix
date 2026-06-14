@@ -76,7 +76,7 @@
 
                         <td>
 
-                            {{ $transaksis->firstItem()+$key }}
+                            {{ ($transaksis->firstItem()-1)+$key }}
 
                         </td>
 
