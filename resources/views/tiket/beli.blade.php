@@ -62,7 +62,8 @@
                             type="text"
                             name="nama_pembeli"
                             class="form-control"
-                            value="{{ auth()->user()->name }}">
+                            value="{{ auth()->user()->name }}"
+                            placeholder="Masukkan nama pembeli">
                     </div>
 
                     <div class="mb-3">
@@ -71,8 +72,9 @@
                             type="number"
                             name="jumlah"
                             class="form-control"
-                            value="1"
-                            min="1">
+                            value=""
+                            placeholder="0"
+                            min="0">
                     </div>
 
                     <div class="mb-3">
