@@ -6,80 +6,131 @@ use App\Models\Event;
 use App\Models\KategoriEvent;
 use App\Models\Lokasi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
     /*
-    |==========================================================================
-    | ADMIN: CRUD Event lengkap
-    |==========================================================================
+    |--------------------------------------------------------------------------
+    | ADMIN
+    |--------------------------------------------------------------------------
     */
 
     public function index()
     {
-        $events = Event::with('kategori', 'lokasi')->get();
+        $events = Event::with([
+            'kategori',
+            'lokasi',
+            'tikets'
+        ])->latest()->paginate(10);
+
         return view('events.index', compact('events'));
     }
 
     public function create()
     {
-        $kategoris = KategoriEvent::all();
-        $lokasis   = Lokasi::all();
-        return view('events.create', compact('kategoris', 'lokasis'));
+        $kategori = KategoriEvent::all();
+        $lokasi   = Lokasi::all();
+
+        return view('events.create', compact(
+            'kategori',
+            'lokasi'
+        ));
     }
 
     public function store(Request $request)
     {
         $request->validate([
+
             'nama_event' => 'required',
-            'deskripsi'  => 'required',
-            'tanggal'    => 'required',
-            'jam'        => 'required'
+
+            'kategori_event_id' => 'required',
+
+            'lokasi_id' => 'required',
+
+            'tanggal' => 'required|date',
+
+            'deskripsi' => 'required',
+
+            'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+
         ]);
 
-        if ($request->filled('kategori_id')) {
-            $kategori = KategoriEvent::findOrFail($request->kategori_id);
-        } else {
-            $request->validate(['kategori' => 'required']);
-            $kategori = KategoriEvent::create(['nama_kategori' => $request->kategori]);
-        }
+        $gambar = null;
 
-        if ($request->filled('lokasi_id')) {
-            $lokasi = Lokasi::findOrFail($request->lokasi_id);
-        } else {
-            $request->validate(['lokasi' => 'required', 'alamat' => 'required']);
-            $lokasi = Lokasi::create([
-                'nama_lokasi' => $request->lokasi,
-                'alamat'      => $request->alamat,
-                'kapasitas'   => 0
-            ]);
+        if ($request->hasFile('gambar')) {
+
+            $gambar = $request
+                ->file('gambar')
+                ->store('events', 'public');
+
         }
 
         Event::create([
-            'kategori_id' => $kategori->id,
-            'lokasi_id'   => $lokasi->id,
-            'nama_event'  => $request->nama_event,
-            'deskripsi'   => $request->deskripsi,
-            'tanggal'     => $request->tanggal,
-            'jam'         => $request->jam
+
+            'nama_event' => $request->nama_event,
+
+            'kategori_event_id' => $request->kategori_event_id,
+
+            'lokasi_id' => $request->lokasi_id,
+
+            'tanggal' => $request->tanggal,
+
+            'deskripsi' => $request->deskripsi,
+
+            'gambar' => $gambar
+
         ]);
 
-        return redirect()->route('events.index')
-            ->with('success', 'Event berhasil ditambahkan');
+        return redirect()
+            ->route('events.index')
+            ->with('success', 'Event berhasil ditambahkan.');
     }
 
     public function show($id)
     {
-        $event = Event::with(['kategori', 'lokasi', 'tikets'])->findOrFail($id);
+        $event = Event::with([
+            'kategori',
+            'lokasi',
+            'tikets'
+        ])->findOrFail($id);
+
         return view('events.show', compact('event'));
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | USER
+    |--------------------------------------------------------------------------
+    */
+
+    public function showUser($id)
+{
+    $event = Event::with([
+        'kategori',
+        'lokasi',
+        'tiket'
+    ])->findOrFail($id);
+
+    return view('user.show', compact('event'));
+}
+
     public function edit($id)
     {
-        $event     = Event::findOrFail($id);
-        $kategoris = KategoriEvent::all();
-        $lokasis   = Lokasi::all();
-        return view('events.edit', compact('event', 'kategoris', 'lokasis'));
+        $event = Event::findOrFail($id);
+
+        $kategori = KategoriEvent::all();
+
+        $lokasi = Lokasi::all();
+
+        return view(
+            'events.edit',
+            compact(
+                'event',
+                'kategori',
+                'lokasi'
+            )
+        );
     }
 
     public function update(Request $request, $id)
@@ -87,55 +138,74 @@ class EventController extends Controller
         $event = Event::findOrFail($id);
 
         $request->validate([
+
             'nama_event' => 'required',
-            'deskripsi'  => 'required',
-            'tanggal'    => 'required',
-            'jam'        => 'required'
+
+            'kategori_event_id' => 'required',
+
+            'lokasi_id' => 'required',
+
+            'tanggal' => 'required',
+
+            'deskripsi' => 'required',
+
+            'gambar' => 'nullable|image|mimes:jpg,png,jpeg|max:2048'
+
         ]);
 
-        if ($request->filled('kategori_id')) {
-            $kategori = KategoriEvent::findOrFail($request->kategori_id);
-        } else {
-            $kategori = KategoriEvent::firstOrCreate(['nama_kategori' => $request->kategori]);
-        }
+        $gambar = $event->gambar;
 
-        if ($request->filled('lokasi_id')) {
-            $lokasi = Lokasi::findOrFail($request->lokasi_id);
-        } else {
-            $lokasi = Lokasi::firstOrCreate(
-                ['nama_lokasi' => $request->lokasi],
-                ['alamat' => $request->alamat, 'kapasitas' => 0]
-            );
+        if ($request->hasFile('gambar')) {
+
+            if ($gambar) {
+
+                Storage::disk('public')->delete($gambar);
+
+            }
+
+            $gambar = $request
+                ->file('gambar')
+                ->store('events', 'public');
+
         }
 
         $event->update([
-            'kategori_id' => $kategori->id,
-            'lokasi_id'   => $lokasi->id,
-            'nama_event'  => $request->nama_event,
-            'deskripsi'   => $request->deskripsi,
-            'tanggal'     => $request->tanggal,
-            'jam'         => $request->jam
+
+            'nama_event' => $request->nama_event,
+
+            'kategori_event_id' => $request->kategori_event_id,
+
+            'lokasi_id' => $request->lokasi_id,
+
+            'tanggal' => $request->tanggal,
+
+            'deskripsi' => $request->deskripsi,
+
+            'gambar' => $gambar
+
         ]);
 
-        return redirect()->route('events.index')
-            ->with('success', 'Event berhasil diperbarui');
+        return redirect()
+            ->route('events.index')
+            ->with('success', 'Event berhasil diperbarui.');
     }
 
     public function destroy($id)
     {
-        Event::destroy($id);
-        return redirect()->route('events.index')
-            ->with('success', 'Event berhasil dihapus');
+        $event = Event::findOrFail($id);
+
+        if ($event->gambar) {
+
+            Storage::disk('public')->delete($event->gambar);
+
+        }
+
+        $event->delete();
+
+        return redirect()
+            ->route('events.index')
+            ->with('success', 'Event berhasil dihapus.');
     }
 
-    /*
-    |==========================================================================
-    | ★ USER: Lihat detail event (read-only) + beli tiket
-    |==========================================================================
-    */
-    public function showUser($id)
-    {
-        $event = Event::with(['kategori', 'lokasi', 'tikets'])->findOrFail($id);
-        return view('user.event-show', compact('event'));
-    }
+
 }

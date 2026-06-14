@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Transaksi extends Model
 {
     protected $fillable = [
+        'user_id',
         'tiket_id',
         'nama_pembeli',
         'jumlah',
@@ -17,5 +18,10 @@ class Transaksi extends Model
     public function tiket()
     {
         return $this->belongsTo(Tiket::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

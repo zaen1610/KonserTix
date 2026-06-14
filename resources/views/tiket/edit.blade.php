@@ -1,81 +1,126 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Tiket')
-@section('page-title', 'Edit Tiket')
+@section('title','Edit Tiket')
 
 @section('content')
 
-<div class="card-dark">
+<div class="container">
 
-    <div class="card-header">
-        <h4>Edit Tiket</h4>
-    </div>
+    <div class="card shadow">
 
-    <div class="card-body">
+        <div class="card-header bg-warning">
 
-        <form action="{{ route('tiket.update', $tiket->id) }}" method="POST">
+            <h4>Edit Tiket</h4>
 
-            @csrf
-            @method('PUT')
+        </div>
 
-            <div class="mb-3">
-                <label>Event</label>
+        <div class="card-body">
 
-                <select name="event_id" class="form-control-dark">
+            @if($errors->any())
 
-                    @foreach($events as $event)
+                <div class="alert alert-danger">
 
-                    <option value="{{ $event->id }}"
-                        {{ $event->id == $tiket->event_id ? 'selected' : '' }}>
+                    <ul>
 
-                        {{ $event->nama_event }}
+                        @foreach($errors->all() as $error)
 
-                    </option>
+                            <li>{{ $error }}</li>
 
-                    @endforeach
+                        @endforeach
 
-                </select>
-            </div>
+                    </ul>
 
-            <div class="mb-3">
-                <label>Jenis Tiket</label>
+                </div>
 
-                <input type="text"
-                       name="jenis"
-                       value="{{ $tiket->jenis }}"
-                       class="form-control-dark">
-            </div>
+            @endif
 
-            <div class="mb-3">
-                <label>Harga</label>
+            <form
+                action="{{ route('tiket.update',$tiket->id) }}"
+                method="POST">
 
-                <input type="number"
-                       name="harga"
-                       value="{{ $tiket->harga }}"
-                       class="form-control-dark">
-            </div>
+                @csrf
+                @method('PUT')
 
-            <div class="mb-3">
-                <label>Stok</label>
+                <div class="mb-3">
 
-                <input type="number"
-                       name="stok"
-                       value="{{ $tiket->stok }}"
-                       class="form-control-dark">
-            </div>
+                    <label>Event</label>
 
-            <button type="submit" class="btn-primary-glow">
-                Update Tiket
-            </button>
+                    <select
+                        name="event_id"
+                        class="form-control">
 
-            <a href="{{ route('tiket.index') }}"
-               class="btn-outline-soft">
+                        @foreach($events as $event)
 
-               Kembali
+                            <option
+                                value="{{ $event->id }}"
+                                {{ $tiket->event_id==$event->id ? 'selected':'' }}>
 
-            </a>
+                                {{ $event->nama_event }}
 
-        </form>
+                            </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label>Jenis Tiket</label>
+
+                    <input
+                        type="text"
+                        name="jenis"
+                        class="form-control"
+                        value="{{ old('jenis',$tiket->jenis) }}"
+                        required>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label>Harga</label>
+
+                    <input
+                        type="number"
+                        name="harga"
+                        class="form-control"
+                        value="{{ old('harga',$tiket->harga) }}"
+                        required>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label>Stok</label>
+
+                    <input
+                        type="number"
+                        name="stok"
+                        class="form-control"
+                        value="{{ old('stok',$tiket->stok) }}"
+                        required>
+
+                </div>
+
+                <button class="btn btn-success">
+
+                    Update
+
+                </button>
+
+                <a
+                    href="{{ route('tiket.index') }}"
+                    class="btn btn-secondary">
+
+                    Kembali
+
+                </a>
+
+            </form>
+
+        </div>
 
     </div>
 
